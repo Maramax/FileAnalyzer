@@ -146,7 +146,6 @@ public class FileAnalyzer {
         } catch (NoSuchFileException e) {
             throw new IOException("Cannot find pathname: " + path);
         } catch (IOException e) {
-            e.printStackTrace();
             throw new IOException("Cannot read text from file");
         }
         return builder.toString();
