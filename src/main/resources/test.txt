@@ -8,5 +8,9 @@ Test with two word word.
 Test with WORD in upper case.
 Test with word, and commas.
 Test with word question mark?
+Слово теж шукає.
+Та знаходить слово, тут теж.
+А тут не знаходить. Добре. Слово.
+
 
 

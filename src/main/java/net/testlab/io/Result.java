@@ -7,21 +7,23 @@ import java.util.List;
  * for presence of sentences containing the specific word
  */
 public class Result {
-    List<String> sentences;
-    private int sentenceCount;
+    private List<String> sentences;
+    private int wordCount;
 
     /**
-     * Constructs an instance with list of sentences.
-     * Calculates the number of the sentences.
+     * Constructs an instance represents result of a text analyzing.
+     * Calculates the number of occurring of a specific word in the text
+     * and a list of sentences with this word.
      *
      * @param sentences - list of sentences
+     * @param wordCount - number of word in text
      */
-    public Result(List<String> sentences) {
+    public Result(List<String> sentences, int wordCount) {
         if (sentences == null) {
             throw new NullPointerException("Parameter sentences is null");
         }
         this.sentences = sentences;
-        this.sentenceCount = sentences.size();
+        this.wordCount = wordCount;
     }
 
 
@@ -29,15 +31,20 @@ public class Result {
         return sentences;
     }
 
-    public void setSentences(List<String> sentences) {
-        this.sentences = sentences;
+    public int getWordCount() {
+        return wordCount;
     }
 
-    public int getSentenceCount() {
-        return sentenceCount;
-    }
-
-    public void setSentenceCount(int sentenceCount) {
-        this.sentenceCount = sentenceCount;
+    @Override
+    public String toString() {
+        StringBuilder builder = new StringBuilder();
+        builder.append("Number of word in text: " + wordCount + "\r\n");
+        if (wordCount > 0) {
+            builder.append("List of sentences:\r\n");
+            for (String s : sentences) {
+                builder.append(" - " + s + "\r\n");
+            }
+        }
+        return builder.toString();
     }
 }

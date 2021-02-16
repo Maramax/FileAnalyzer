@@ -1,13 +1,12 @@
 package net.testlab.io;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.IOException;
 import java.nio.file.*;
 import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-import java.util.stream.Collectors;
 
 public class FileAnalyzer {
     /**
@@ -25,8 +24,8 @@ public class FileAnalyzer {
         validateParameters(path, word);
         String text = getTextFromFile(path);
         List<String> allSentences = getSentencesFromText(text);
-        List<String> sentencesWithWord = filterSentencesByContainingWord(allSentences, word);
-        return new Result(sentencesWithWord);
+        return getResultFromSentences(allSentences, word);
+
     }
 
     /**
@@ -40,11 +39,7 @@ public class FileAnalyzer {
      */
     public void analyzeAndPrint(String path, String word) throws IOException {
         Result result = this.analyze(path, word);
-        int count = result.getSentenceCount();
-        printCount(word, count);
-        if (count > 0) {
-            printList(result.getSentences());
-        }
+        System.out.println(result.toString());
     }
 
     /**
@@ -67,8 +62,9 @@ public class FileAnalyzer {
      * @param word - word to find the sentences with it
      */
     private void validateParameters(String path, String word) {
-        if (path == null || path.equals("") || word == null || word.equals(""))
+        if (path == null || path.isEmpty() || word == null || word.isEmpty() || !new File(path).exists()) {
             throw new IllegalArgumentException("Parameters 'path' and 'word' cannot to be null or empty");
+        }
     }
 
     /**
@@ -79,12 +75,14 @@ public class FileAnalyzer {
      */
     private List<String> getSentencesFromText(String text) {
         List<String> sentenceList = new ArrayList<>();
-        BreakIterator iterator = BreakIterator.getSentenceInstance(Locale.US);
+        BreakIterator iterator = BreakIterator.getSentenceInstance();
         iterator.setText(text);
-        for (int start = iterator.first(), end = iterator.next();
-             end != BreakIterator.DONE;
-             start = end, end = iterator.next()) {
+        int start = iterator.first();
+        int end = iterator.next();
+        while (end != BreakIterator.DONE) {
             sentenceList.add(text.substring(start, end).trim());
+            start = end;
+            end = iterator.next();
         }
         return sentenceList;
     }
@@ -95,33 +93,44 @@ public class FileAnalyzer {
      *
      * @param list - list of sentences
      * @param word - word that a sentence must contain
-     * @return list of sentences containing the word
+     * @return Result instance with list of sentences containing the word
      */
-    private List<String> filterSentencesByContainingWord(List<String> list, String word) {
-        return list.stream()
-                .filter(str -> checkIfContainsWord(str, word))
-                .collect(Collectors.toList());
+    private Result getResultFromSentences(List<String> list, String word) {
+        int totalWordCount = 0;
+        List<String> sentencesWithWord = new ArrayList<>();
+        for (String sentence : list) {
+            int wordCount = countWordsInSentence(sentence, word);
+            if (wordCount > 0) {
+                sentencesWithWord.add(sentence);
+                totalWordCount += wordCount;
+            }
+        }
+        ;
+        return new Result(sentencesWithWord, totalWordCount);
     }
 
     /**
      * Checks whether the sentence contains the word provided or not
      *
      * @param sentence - sentence to be checked for containing the word
-     * @param word     - the word to be searched in the sentence
+     * @param searchedWord     - the word to be searched in the sentence
      * @return true if the sentence contains the word
      */
-    private boolean checkIfContainsWord(String sentence, String word) {
-        BreakIterator iterator = BreakIterator.getWordInstance(Locale.US);
+    private int countWordsInSentence(String sentence, String searchedWord) {
+        int count = 0;
+        BreakIterator iterator = BreakIterator.getWordInstance();
         iterator.setText(sentence);
-        for (int start = iterator.first(), end = iterator.next();
-             end != BreakIterator.DONE;
-             start = end, end = iterator.next()) {
-            String s = (sentence.substring(start, end));
-            if (s.equalsIgnoreCase(word)) {
-                return true;
+        int start = iterator.first();
+        int end = iterator.next();
+        while (end != BreakIterator.DONE) {
+            String word = (sentence.substring(start, end));
+            if (word.equalsIgnoreCase(searchedWord)) {
+                count++;
             }
+            start = end;
+            end = iterator.next();
         }
-        return false;
+        return count;
     }
 
     /**
@@ -139,39 +148,13 @@ public class FileAnalyzer {
             while ((c = reader.read()) != -1) {
                 builder.append((char) c);
             }
-        } catch (NullPointerException e) {
-            throw new IOException("Path to file is not indicated");
-        } catch (AccessDeniedException e) {
-            throw new IOException("Access to file denied");
-        } catch (NoSuchFileException e) {
-            throw new IOException("Cannot find pathname: " + path);
         } catch (IOException e) {
             throw new IOException("Cannot read text from file");
         }
         return builder.toString();
     }
 
-    /**
-     * Prints to console line with word and number of sentences with this word
-     *
-     * @param word  - word that was used for search
-     * @param count - number of sentences found
-     */
-    private void printCount(String word, int count) {
-        System.out.println("Number of sentences containing word '" + word + "': " + count);
-    }
 
-    /**
-     * Prints to console lines of sentences from list
-     *
-     * @param list - list of sentences
-     */
-    private void printList(List<String> list) {
-        System.out.println("List of sentences:");
-        for (String s : list) {
-            System.out.println(" - " + s);
-        }
-    }
 }
 
 
