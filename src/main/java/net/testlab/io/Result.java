@@ -7,34 +7,35 @@ import java.util.List;
  * for presence of sentences containing the specific word
  */
 public class Result {
-    private List<String> sentences;
+
     private int wordCount;
+    private List<String> sentences;
 
     /**
      * Constructs an instance represents result of a text analyzing.
      * Calculates the number of occurring of a specific word in the text
      * and a list of sentences with this word.
      *
-     * @param sentences - list of sentences
-     * @param wordCount - number of word in text
+     * @param builder - builder for construction of Result object
      */
-    public Result(List<String> sentences, int wordCount) {
-        if (sentences == null) {
-            throw new NullPointerException("Parameter sentences is null");
-        }
-        this.sentences = sentences;
-        this.wordCount = wordCount;
+    private Result(ResultBuilder builder) {
+        this.sentences = builder.sentences;
+        this.wordCount = builder.wordCount;
     }
 
-
-    public List<String> getSentences() {
-        return sentences;
-    }
 
     public int getWordCount() {
         return wordCount;
     }
 
+    public List<String> getSentences() {
+        return sentences;
+    }
+
+    /**
+     * Overrides methods to provide correct string representation of object
+     * @return string representation of the object
+     */
     @Override
     public String toString() {
         StringBuilder builder = new StringBuilder();
@@ -47,4 +48,53 @@ public class Result {
         }
         return builder.toString();
     }
+
+    /**
+     * Builder class for construction of Result objects
+     */
+
+    public static class ResultBuilder {
+        private int wordCount;
+        private List<String> sentences;
+
+        /**
+         * Sets value for result list of sentences
+         *
+         * @param sentences list of sentences
+         */
+        public ResultBuilder setSentences(List<String> sentences) {
+            this.sentences = sentences;
+            return this;
+        }
+
+        /**
+         * Sets value for result counted number of word
+         *
+         * @param wordCount
+         */
+        public ResultBuilder setWordCount(int wordCount) {
+            this.wordCount = wordCount;
+            return this;
+        }
+
+        /**
+         * Returns object built with current fields set
+         *
+         * @return Result object
+         */
+        public Result build() {
+            Result result = new Result(this);
+            validateResultObject(result);
+            return result;
+        }
+
+        private void validateResultObject(Result result) {
+            if (result.sentences == null || result.wordCount < 0) {
+                throw new NullPointerException("Wrong parameters for construction Result object");
+            }
+        }
+
+
+    }
+
 }

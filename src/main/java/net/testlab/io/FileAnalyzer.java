@@ -1,8 +1,6 @@
 package net.testlab.io;
 
-import java.io.BufferedReader;
-import java.io.File;
-import java.io.IOException;
+import java.io.*;
 import java.nio.file.*;
 import java.text.BreakIterator;
 import java.util.ArrayList;
@@ -11,8 +9,9 @@ import java.util.List;
 public class FileAnalyzer {
     /**
      * Open the file by its path name and analyzes its content
-     * for presence of sentences with a specific word. Returns Result object
-     * with a list of such sentences and their number.
+     * for presence of a specific word. Returns Result object
+     * with number of occurrence of this word in the text and a list
+     * of sentences containing the word.
      *
      * @param path - path to the file to be analyzed
      * @param word - word to find the sentences with it
@@ -30,8 +29,8 @@ public class FileAnalyzer {
 
     /**
      * Open the file by its path name and analyzes its content
-     * for presence of sentences with a specific word. Prints to console
-     * a list of such sentences and their number.
+     * for presence of a specific word. Prints number of occurrence
+     * of this word in the text and a list of sentences containing the word.
      *
      * @param path - path to the file to be analyzed
      * @param word - word to find the sentences with it
@@ -44,8 +43,8 @@ public class FileAnalyzer {
 
     /**
      * Open the file by its path name and analyzes its content
-     * for presence of sentences with a specific word. Save to the
-     * log file a list of such sentences and their number.
+     * for presence of a specific word. Save to the log file number of occurrence
+     * of this word in the text and a list of sentences containing the word.
      *
      * @param filePath - path to the file to be analyzed
      * @param logPath  - path to the log file to save the result
@@ -56,7 +55,8 @@ public class FileAnalyzer {
     }
 
     /**
-     * Validates the parameters path and word that should be null or empty
+     * Validates the parameters path and word that should be null or empty.
+     * File located by path should exist.
      *
      * @param path - path to the file to be analyzed
      * @param word - word to find the sentences with it
@@ -88,11 +88,12 @@ public class FileAnalyzer {
     }
 
     /**
-     * Filters list of sentences maintaining only the sentences containing
-     * the word provided
+     * Iterates a list of sentences, collects sentences containing
+     * the word specified and counts total number of the word
+     * in the sentences.
      *
      * @param list - list of sentences
-     * @param word - word that a sentence must contain
+     * @param word - word to be searched
      * @return Result instance with list of sentences containing the word
      */
     private Result getResultFromSentences(List<String> list, String word) {
@@ -105,15 +106,20 @@ public class FileAnalyzer {
                 totalWordCount += wordCount;
             }
         }
-        ;
-        return new Result(sentencesWithWord, totalWordCount);
+
+        Result result = new Result.ResultBuilder()
+                .setSentences(sentencesWithWord)
+                .setWordCount(totalWordCount)
+                .build();
+
+        return result;
     }
 
     /**
-     * Checks whether the sentence contains the word provided or not
+     * Counts number of a word in a sentence
      *
-     * @param sentence - sentence to be checked for containing the word
-     * @param searchedWord     - the word to be searched in the sentence
+     * @param sentence     - sentence to be checked for containing the word
+     * @param searchedWord - the word to be searched in the sentence
      * @return true if the sentence contains the word
      */
     private int countWordsInSentence(String sentence, String searchedWord) {
@@ -123,7 +129,7 @@ public class FileAnalyzer {
         int start = iterator.first();
         int end = iterator.next();
         while (end != BreakIterator.DONE) {
-            String word = (sentence.substring(start, end));
+            String word = sentence.substring(start, end);
             if (word.equalsIgnoreCase(searchedWord)) {
                 count++;
             }
@@ -142,16 +148,15 @@ public class FileAnalyzer {
      */
     private String getTextFromFile(String path) throws IOException {
 
-        StringBuilder builder = new StringBuilder();
-        try (BufferedReader reader = Files.newBufferedReader(Paths.get(path))) {
-            int c;
-            while ((c = reader.read()) != -1) {
-                builder.append((char) c);
-            }
+        File file = new File(path);
+        long fileSize = file.length();
+        byte[] textBuffer = new byte[(int) fileSize];
+        try (BufferedInputStream input = new BufferedInputStream(new FileInputStream(file))) {
+            input.read(textBuffer);
         } catch (IOException e) {
             throw new IOException("Cannot read text from file");
         }
-        return builder.toString();
+        return new String(textBuffer);
     }
 
 
