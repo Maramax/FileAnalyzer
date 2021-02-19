@@ -18,11 +18,10 @@ public class Result {
      *
      * @param builder - builder for construction of Result object
      */
-    private Result(ResultBuilder builder) {
+    private Result(Builder builder) {
         this.sentences = builder.sentences;
         this.wordCount = builder.wordCount;
     }
-
 
     public int getWordCount() {
         return wordCount;
@@ -53,7 +52,7 @@ public class Result {
      * Builder class for construction of Result objects
      */
 
-    public static class ResultBuilder {
+    public static class Builder {
         private int wordCount;
         private List<String> sentences;
 
@@ -62,7 +61,7 @@ public class Result {
          *
          * @param sentences list of sentences
          */
-        public ResultBuilder setSentences(List<String> sentences) {
+        public Builder sentences(List<String> sentences) {
             this.sentences = sentences;
             return this;
         }
@@ -72,7 +71,7 @@ public class Result {
          *
          * @param wordCount
          */
-        public ResultBuilder setWordCount(int wordCount) {
+        public Builder wordCount(int wordCount) {
             this.wordCount = wordCount;
             return this;
         }
@@ -88,13 +87,18 @@ public class Result {
             return result;
         }
 
+        /**
+         * Checks parameters of Result object. Parameter 'sentences'
+         * should not be null. Parameter 'wordCount' should not be <0
+         *
+         * @param result Result object to check its parameters
+         * @throws IllegalArgumentException if one of the parameters is incorrect
+         */
         private void validateResultObject(Result result) {
             if (result.sentences == null || result.wordCount < 0) {
-                throw new NullPointerException("Wrong parameters for construction Result object");
+                throw new IllegalArgumentException("Wrong parameters for construction Result object");
             }
         }
-
-
     }
 
 }

@@ -1,8 +1,6 @@
 package net.testlab.io;
 
 import java.io.*;
-import java.nio.file.*;
-import java.text.BreakIterator;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -22,9 +20,8 @@ public class FileAnalyzer {
     public Result analyze(String path, String word) throws IOException {
         validateParameters(path, word);
         String text = getTextFromFile(path);
-        List<String> allSentences = getSentencesFromText(text);
-        return getResultFromSentences(allSentences, word);
-
+        String[] allSentences = getSentencesFromText(text);
+        return checkSentencesForContainingWord(allSentences, word);
     }
 
     /**
@@ -62,8 +59,9 @@ public class FileAnalyzer {
      * @param word - word to find the sentences with it
      */
     private void validateParameters(String path, String word) {
-        if (path == null || path.isEmpty() || word == null || word.isEmpty() || !new File(path).exists()) {
-            throw new IllegalArgumentException("Parameters 'path' and 'word' cannot to be null or empty");
+        if (path == null || path.isEmpty() || word == null || word.isEmpty()
+                || !new File(path).exists()) {
+            throw new IllegalArgumentException("Wrong parameters or cannot find file");
         }
     }
 
@@ -73,17 +71,8 @@ public class FileAnalyzer {
      * @param text - initial text to be split into sentences
      * @return sentences as list of Strings
      */
-    private List<String> getSentencesFromText(String text) {
-        List<String> sentenceList = new ArrayList<>();
-        BreakIterator iterator = BreakIterator.getSentenceInstance();
-        iterator.setText(text);
-        int start = iterator.first();
-        int end = iterator.next();
-        while (end != BreakIterator.DONE) {
-            sentenceList.add(text.substring(start, end).trim());
-            start = end;
-            end = iterator.next();
-        }
+    private String[] getSentencesFromText(String text) {
+        String[] sentenceList = text.split("(?<=[\\.!?])");
         return sentenceList;
     }
 
@@ -92,26 +81,24 @@ public class FileAnalyzer {
      * the word specified and counts total number of the word
      * in the sentences.
      *
-     * @param list - list of sentences
+     * @param sentences - list of sentences
      * @param word - word to be searched
      * @return Result instance with list of sentences containing the word
      */
-    private Result getResultFromSentences(List<String> list, String word) {
+    private Result checkSentencesForContainingWord(String[] sentences, String word) {
         int totalWordCount = 0;
         List<String> sentencesWithWord = new ArrayList<>();
-        for (String sentence : list) {
+        for (String sentence : sentences) {
             int wordCount = countWordsInSentence(sentence, word);
             if (wordCount > 0) {
-                sentencesWithWord.add(sentence);
+                sentencesWithWord.add(sentence.trim());
                 totalWordCount += wordCount;
             }
         }
-
-        Result result = new Result.ResultBuilder()
-                .setSentences(sentencesWithWord)
-                .setWordCount(totalWordCount)
+        Result result = new Result.Builder()
+                .sentences(sentencesWithWord)
+                .wordCount(totalWordCount)
                 .build();
-
         return result;
     }
 
@@ -124,17 +111,11 @@ public class FileAnalyzer {
      */
     private int countWordsInSentence(String sentence, String searchedWord) {
         int count = 0;
-        BreakIterator iterator = BreakIterator.getWordInstance();
-        iterator.setText(sentence);
-        int start = iterator.first();
-        int end = iterator.next();
-        while (end != BreakIterator.DONE) {
-            String word = sentence.substring(start, end);
+        String[] words = sentence.split("\\P{L}+");
+        for (String word : words) {
             if (word.equalsIgnoreCase(searchedWord)) {
                 count++;
             }
-            start = end;
-            end = iterator.next();
         }
         return count;
     }
@@ -147,19 +128,16 @@ public class FileAnalyzer {
      * @throws IOException
      */
     private String getTextFromFile(String path) throws IOException {
-
         File file = new File(path);
         long fileSize = file.length();
         byte[] textBuffer = new byte[(int) fileSize];
         try (BufferedInputStream input = new BufferedInputStream(new FileInputStream(file))) {
             input.read(textBuffer);
         } catch (IOException e) {
-            throw new IOException("Cannot read text from file");
+            throw new IOException("Cannot read text from file", e);
         }
         return new String(textBuffer);
     }
-
-
 }
 
 
