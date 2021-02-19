@@ -21,7 +21,7 @@ public class FileAnalyzer {
         validateParameters(path, word);
         String text = getTextFromFile(path);
         String[] allSentences = getSentencesFromText(text);
-        return checkSentencesForContainingWord(allSentences, word);
+        return getResultFromSentences(allSentences, word);
     }
 
     /**
@@ -35,7 +35,7 @@ public class FileAnalyzer {
      */
     public void analyzeAndPrint(String path, String word) throws IOException {
         Result result = this.analyze(path, word);
-        System.out.println(result.toString());
+        System.out.println(result);
     }
 
     /**
@@ -86,7 +86,7 @@ public class FileAnalyzer {
      * @param word - word to be searched
      * @return Result instance with list of sentences containing the word
      */
-    private Result checkSentencesForContainingWord(String[] sentences, String word) {
+    private Result getResultFromSentences(String[] sentences, String word) {
         int totalWordCount = 0;
         List<String> sentencesWithWord = new ArrayList<>();
         for (String sentence : sentences) {
@@ -96,11 +96,11 @@ public class FileAnalyzer {
                 totalWordCount += wordCount;
             }
         }
-        Result result = new Result.Builder()
+
+        return new Result.Builder()
                 .sentences(sentencesWithWord)
                 .wordCount(totalWordCount)
                 .build();
-        return result;
     }
 
     /**

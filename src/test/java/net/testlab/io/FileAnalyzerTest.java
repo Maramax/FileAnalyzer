@@ -1,32 +1,41 @@
 package net.testlab.io;
 
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.*;
 
 class FileAnalyzerTest {
 
-    static final FileAnalyzer analyzer = new FileAnalyzer();
+    private static FileAnalyzer analyzer;
+
+    @BeforeAll
+    static void setUp(){
+        analyzer = new FileAnalyzer();
+    }
 
     @Test
     @DisplayName("Analyze if sentences in the file contain 'word'")
     void analyzeIfContainWord() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "word");
-        String[] expectedArray = {
+        Result result = analyzer.analyze("src/test/resources/test.txt", "word");
+        List<String> expectedList = Arrays.asList(
                 "Word.",
                 "Test with word.",
                 "Test with two word word.",
                 "Test with WORD in upper case.",
                 "Test with word, and commas.",
-                "Test with word question mark?"};
+                "Test with word question mark?");
         assertAll(
                 () -> assertEquals(7, result.getWordCount()),
-                () -> assertArrayEquals(expectedArray, result.getSentences().toArray())
+                () -> assertEquals(expectedList, result.getSentences())
         );
     }
 
@@ -34,30 +43,30 @@ class FileAnalyzerTest {
     @Test
     @DisplayName("Analyze if sentences in the file contain 'two'")
     void analyzeIfContainTwo() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "two");
-        String[] expectedArray = {
-                "Test with two word word."};
+        Result result = analyzer.analyze("src/test/resources/test.txt", "two");
+        List<String> expectedList = Arrays.asList(
+                "Test with two word word.");
         assertAll(
                 () -> assertEquals(1, result.getWordCount()),
-                () -> assertArrayEquals(expectedArray, result.getSentences().toArray())
+                () -> assertEquals(expectedList, result.getSentences())
         );
     }
 
     @Test
     @DisplayName("Analyze if sentences in the file contain 'somethingelse'")
     void analyzeIfContainSomethingelse() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "somethingesle");
-        String[] expectedArray = {};
+        Result result = analyzer.analyze("src/test/resources/test.txt", "somethingesle");
+        List<String> expectedList = Arrays.asList();
         assertAll(
                 () -> assertEquals(0, result.getWordCount()),
-                () -> assertArrayEquals(expectedArray, result.getSentences().toArray())
+                () -> assertEquals(expectedList, result.getSentences())
         );
     }
 
     @Test
     @DisplayName("Analyze and print if sentences in the file contain 'word'")
     void analyzeAndPrintIfContainWord() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "word");
+        Result result = analyzer.analyze("src/test/resources/test.txt", "word");
         String expectedText = "Number of word in text: 7\r\n" +
                 "List of sentences:\r\n" +
                 " - Word.\r\n" +
@@ -72,7 +81,7 @@ class FileAnalyzerTest {
     @Test
     @DisplayName("Analyze and print if sentences in the file contain 'two'")
     void analyzeAndPrintIfContainTwo() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "two");
+        Result result = analyzer.analyze("src/test/resources/test.txt", "two");
         String expectedText = "Number of word in text: 1\r\n" +
                 "List of sentences:\r\n" +
                 " - Test with two word word.\r\n";
@@ -82,7 +91,7 @@ class FileAnalyzerTest {
     @Test
     @DisplayName("Analyze and print if sentences in the file contain 'somethingelse'")
     void analyzeAndPrintIfContainSomethingelse() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "somethingesle");
+        Result result = analyzer.analyze("src/test/resources/test.txt", "somethingesle");
         String expectedText = "Number of word in text: 0\r\n";
         assertEquals(expectedText, result.toString());
     }
@@ -90,7 +99,7 @@ class FileAnalyzerTest {
     @Test
     @DisplayName("Analyze and print if sentences in the file contain 'слово'")
     void analyzeIfContainCyrillic() throws IOException {
-        Result result = analyzer.analyze("src/main/resources/test.txt", "слово");
+        Result result = analyzer.analyze("src/test/resources/test.txt", "слово");
         String expectedText = "Number of word in text: 3\r\n" +
                 "List of sentences:\r\n" +
                 " - Слово теж шукає.\r\n" +
@@ -111,10 +120,10 @@ class FileAnalyzerTest {
                     analyzer.analyze("", "word");
                 }),
                 () -> assertThrows(IllegalArgumentException.class, () -> {
-                    analyzer.analyze("src/main/resources/test.txt", null);
+                    analyzer.analyze("src/test/resources/test.txt", null);
                 }),
                 () -> assertThrows(IllegalArgumentException.class, () -> {
-                    analyzer.analyze("src/main/resources/test.txt", "");
+                    analyzer.analyze("src/test/resources/test.txt", "");
                 })
         );
     }

@@ -44,6 +44,8 @@ public class Result {
             for (String s : sentences) {
                 builder.append(" - " + s + "\r\n");
             }
+        } else{
+            System.out.println("No sentences with such word");
         }
         return builder.toString();
     }
