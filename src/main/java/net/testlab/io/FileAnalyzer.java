@@ -66,7 +66,8 @@ public class FileAnalyzer {
     }
 
     /**
-     * Splits text by sentence BreakIterator and return list of sentences
+     * Splits text by sentence BreakIterator and return list of sentences.
+     * As a delimiter it uses any of the following symbols: '.', '!' or '?'.
      *
      * @param text - initial text to be split into sentences
      * @return sentences as list of Strings
@@ -103,7 +104,8 @@ public class FileAnalyzer {
     }
 
     /**
-     * Counts number of a word in a sentence
+     * Counts number of a specific word in a sentence. It considers as
+     * a word any combination of letters of any language.
      *
      * @param sentence     - sentence to be checked for containing the word
      * @param searchedWord - the word to be searched in the sentence
